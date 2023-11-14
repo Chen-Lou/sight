@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import './App.css';
-
+import Webcam from 'webcam-easy';
 function App() {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState('');
@@ -8,21 +8,44 @@ function App() {
   const [statusMessage, setStatusMessage] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [dragOver, setDragOver] = useState(false);
-
+  //const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const webcamElement = document.getElementById('webcam');
+const canvasElement = document.getElementById('canvas');
+const snapSoundElement = document.getElementById('snapSound');
+const webcam = new Webcam(webcamElement, 'user', canvasElement, snapSoundElement);
+let isCamOpen = true;
   const handleFileChange = useCallback((selectedFile) => {
     setFile(selectedFile);
     setPreview(URL.createObjectURL(selectedFile));
     setStatusMessage('Image selected. Click "Analyze Image" to proceed.');
     setUploadProgress(0);
   }, []);
-
+  // useEffect(()=>{
+  //     webcam.start().then(()=>{
+  //     });
+  //   return () => {
+  //     webcam.stop();
+  //   };
+  // },[]);
+  // const handleBeforeUnload = () =>{
+  //   console.log("stop camera");
+  //   webcam.stop();
+  // }
+  const handleSnap = () => {
+      const picture = webcam.snap();
+      console.log(picture);
+      document.querySelector('#download-photo').href = picture;
+      webcam.stop();
+  }
+  const openCamera = () =>{
+    webcam.start();
+  }
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!file) {
       setStatusMessage('No file selected!');
       return;
     }
-
     setStatusMessage('Sending request...');
     setUploadProgress(10); // Initial progress
     const reader = new FileReader();
@@ -31,7 +54,6 @@ function App() {
       const base64String = reader.result
         .replace('data:', '')
         .replace(/^.+,/, '');
-
       const data = {
         model: "gpt-4-vision-preview",
         messages: [
@@ -53,26 +75,21 @@ function App() {
         ],
         max_tokens: 300
       };
-
       try {
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer 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` // Use environment variable for API key
+            'Authorization': `Bearer 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` // Use environment variable for API key
           },
           body: JSON.stringify(data)
         });
-
         setUploadProgress(50); // Midway progress
-
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
         const apiResponse = await response.json();
         setUploadProgress(100); // Final progress
-
         if (apiResponse.choices && apiResponse.choices.length > 0) {
           setResult(apiResponse.choices[0].message.content);
           setStatusMessage('Analysis complete.');
@@ -90,16 +107,13 @@ function App() {
       setStatusMessage('File reading failed!');
     };
   };
-
   const handleDragOver = useCallback((event) => {
     event.preventDefault();
     setDragOver(true);
   }, []);
-
   const handleDragLeave = useCallback(() => {
     setDragOver(false);
   }, []);
-
   const handleDrop = useCallback((event) => {
     event.preventDefault();
     setDragOver(false);
@@ -108,23 +122,22 @@ function App() {
       handleFileChange(files[0]);
     }
   }, [handleFileChange]);
-
   return (
     <div className="App">
-      <h1>OpenAI Image Analysis</h1>
-      <div 
+      <h1>Sight</h1>
+      <div
         className={`drop-area ${dragOver ? 'drag-over' : ''}`}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onClick={() => document.getElementById('fileUpload').click()}
       >
-        <input 
+        <input
           id="fileUpload"
-          type="file" 
-          onChange={(e) => handleFileChange(e.target.files[0])} 
-          accept="image/*" 
-          style={{ display: 'none' }} 
+          type="file"
+          onChange={(e) => handleFileChange(e.target.files[0])}
+          accept="image/*"
+          style={{ display: 'none' }}
         />
         {preview ? (
           <img src={preview} alt="Preview" className="image-preview" />
@@ -136,6 +149,9 @@ function App() {
       {uploadProgress > 0 && (
         <progress value={uploadProgress} max="100"></progress>
       )}
+      <button onClick={handleSnap} className='webcam-button'>Snap</button>
+      <button onClick={openCamera} className='webcam-button'>Open Camera</button>
+      {/* <button onClick={handleGetPhoto} className='webcam-button'>Get Photo</button> */}
       <button onClick={handleSubmit} className="analyze-button">
         Analyze Image
       </button>
@@ -148,5 +164,4 @@ function App() {
     </div>
   );
 }
-
 export default App;
