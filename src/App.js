@@ -1,7 +1,14 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import './App.css';
 import Webcam from 'webcam-easy';
+import { useSpeechSynthesis } from 'react-speech-kit';
+
 function App() {
+
+  const {speak} = useSpeechSynthesis();
+  const readOutText = () => {
+    speak({text:result})
+  }
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState('');
   const [result, setResult] = useState('');
@@ -44,6 +51,8 @@ let isCamOpen = true;
     event.preventDefault();
     if (!file) {
       setStatusMessage('No file selected!');
+
+      
       return;
     }
     setStatusMessage('Sending request...');
@@ -80,7 +89,7 @@ let isCamOpen = true;
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer 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` // Use environment variable for API key
+            'Authorization': `Bearer ` // Use environment variable for API key
           },
           body: JSON.stringify(data)
         });
@@ -140,17 +149,22 @@ let isCamOpen = true;
           style={{ display: 'none' }}
         />
         {preview ? (
-          <img src={preview} alt="Preview" className="image-preview" />
+          < img src={preview} alt="Preview" className="image-preview" />
         ) : (
-          <p>Drag and drop an image here, or click to select an image to upload.</p>
+          <p>Drag and drop an image here, or click to select an image to upload.</p >
         )}
       </div>
-      {statusMessage && <p className="status-message">{statusMessage}</p>}
+      {statusMessage && <p className="status-message">{statusMessage}</p >}
       {uploadProgress > 0 && (
         <progress value={uploadProgress} max="100"></progress>
       )}
+
       <button onClick={handleSnap} className='webcam-button'>Snap</button>
       <button onClick={openCamera} className='webcam-button'>Open Camera</button>
+
+      <button className='readout-button' onClick={() =>{readOutText()}} >Read Out</button>
+
+
       {/* <button onClick={handleGetPhoto} className='webcam-button'>Get Photo</button> */}
       <button onClick={handleSubmit} className="analyze-button">
         Analyze Image
