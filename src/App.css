@@ -1,3 +1,8 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
 .App {
   text-align: center;
   max-width: 600px;
@@ -6,6 +11,16 @@
   border: 1px solid #ddd;
   border-radius: 8px;
 }
+
+.Container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  margin: 0 10px;
+}
+
 .drop-area {
   border: 2px dashed #aaa;
   border-radius: 8px;
@@ -80,3 +95,14 @@
 .readout-button:hover {
   background-color: #0056B3;
 }
+
+button {
+  background-color: crimson;
+  color: #fff;
+  margin-top: 10px;
+  padding: 10px 40px;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+}
+

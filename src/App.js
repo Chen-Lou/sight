@@ -1,11 +1,9 @@
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import './App.css';
 import Webcam from "react-webcam";
 import { useSpeechRecognition } from 'react-speech-kit';
-//require('dotenv').config();
 
 function App() {
-  //
   const [speechValue, setSpeechValue] = useState('')
   const { listen, stop } = useSpeechRecognition({
     onResult: (speechResult) => {
